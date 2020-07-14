@@ -2,3 +2,8 @@ html, body {
   margin: 0;
   padding: 0;
 }
+
+body {
+  -webkit-touch-callout:none; // リンク長押しのポップアップを無効化
+  -webkit-user-select:none; // テキスト長押しの選択ボックスを無効化
+}

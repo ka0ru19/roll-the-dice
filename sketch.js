@@ -60,7 +60,7 @@ function draw() {
   
   drawTextSquare(
     windowWidth/2,
-    windowHeight/2 + 100,
+    windowHeight/2 + squareSpan,
     squareSize,
     currentResult[currentResult.length-1]
   );

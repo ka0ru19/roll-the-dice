@@ -1,3 +1,4 @@
+let canvasWidth;
 let diceCount; // さいころの個数
 let textWidthSize;
 let diceDefaultEyes = ['1', '2', '3', '4' ,'5', '6'];
@@ -8,25 +9,27 @@ let elementMargin = 16;
 let buttonWidth = 100;
 let dice2text;
 let dice2InputArray = [];
+let dice3text;
+let dice3InputArray = [];
 let diceDefaultColorArray = [
   ['#000', '#FFF'],
   ['#FF0', '#F00'],
   ['#FFF', '#F90']
 ];
+let isDiceActiveArray = [];
 let diceColorArray = [];
 let diceRollFrameCount = 0;
 const diceRollTime = 0.6* 60; // 秒間
 
 function setup() { 
-  createCanvas(windowWidth, windowHeight);
- 
-  diceCount=2;
+  diceCount=3;
   diceColorArray = diceDefaultColorArray;
   diceEyes = [
     diceDefaultEyes,
     diceDefaultEyes,
     ['船a', '船b', '船c', '黄', '青', '緑']
   ]
+  isDiceActiveArray = [true, true, true];
   
   rectMode(CENTER);
   textAlign(CENTER);
@@ -45,11 +48,16 @@ function setup() {
   
   let domTotalWidth = (domTotalWidth1 > domTotalWidth2) ? 
       domTotalWidth1 : domTotalWidth2;
+
+  canvasWidth = (windowWidth > domTotalWidth) ? windowWidth : domTotalWidth;
+  createCanvas(canvasWidth, windowHeight);
   
-  let startPositionX = windowWidth/2 - domTotalWidth/2;
+  let startPositionX = canvasWidth/2 - domTotalWidth/2;
   
+  // setup dice2
+  var positionY = windowHeight*5/10;
   dice2text = createElement('h4', 'dice2');
-  dice2text.position(startPositionX, windowHeight*3/4);
+  dice2text.position(startPositionX, positionY);
   dice2text.size(diceTextWidth);
   dice2text.style('color', diceColorArray[1][0]);
   dice2text.style('background-color',  diceColorArray[1][1]);
@@ -58,23 +66,13 @@ function setup() {
     var input = createInput();
     var positionX = dice2text.x + dice2text.width +
         elementMargin + (inputWidth + elementMargin)*i;
-    var positionY = windowHeight*3/4;
     input.position(positionX, positionY);
     input.size(inputWidth);
     input.value(diceEyes[1][i]);
     dice2InputArray.push(input);
   }
                                  
-  const rollButtonWidth = 160;
-  var positionY = windowHeight*2/3;
-  var positionX = windowWidth/2 - rollButtonWidth/2;
-  var rollButton = createButton('Roll the Dice!');
-  rollButton.class('btn btn-primary btn-lg');
-  rollButton.position(positionX, positionY);
-  rollButton.size(rollButtonWidth);
-  rollButton.mouseReleased(rollTheDice);
-  
-  positionY = windowHeight*3/4 + domLineHeight;
+  positionY += domLineHeight;
   
   positionX = startPositionX + elementMargin;
   var dice2UpdateButton = createDomButton('update', positionX, positionY);
@@ -86,6 +84,48 @@ function setup() {
   positionX = dice2ColorButton.x + dice2ColorButton.width + elementMargin;
   var dice2RemoveButton = createDomButton('remove', positionX, positionY);
   dice2RemoveButton.mousePressed(dice2Remove);
+  
+  // setup dice3
+  positionY += domLineHeight + elementMargin;
+  dice3text = createElement('h4', 'dice3');
+  dice3text.position(startPositionX, positionY);
+  dice3text.size(diceTextWidth);
+  dice3text.style('color', diceColorArray[2][0]);
+  dice3text.style('background-color',  diceColorArray[2][1]);
+  
+  for (let i=0; i<6; i++) { // TODO: window widthが小さい場合のレイアウトを作る
+    var input = createInput();
+    var positionX = dice3text.x + dice3text.width +
+        elementMargin + (inputWidth + elementMargin)*i;
+    input.position(positionX, positionY);
+    input.size(inputWidth);
+    input.value(diceEyes[2][i]);
+    dice3InputArray.push(input);
+  }
+                                 
+  positionY += domLineHeight;
+  
+  positionX = startPositionX + elementMargin;
+  var dice3UpdateButton = createDomButton('update', positionX, positionY);
+  dice3UpdateButton.mousePressed(dice3Update);
+  
+  positionX = dice3UpdateButton.x + dice3UpdateButton.width + elementMargin;
+  var dice3ColorButton = createDomButton('color', positionX, positionY);
+  
+  positionX = dice3ColorButton.x + dice3ColorButton.width + elementMargin;
+  var dice3RemoveButton = createDomButton('remove', positionX, positionY);
+  dice3RemoveButton.mousePressed(dice3Remove);
+  
+  // setup rollButton
+  const rollButtonWidth = canvasWidth - elementMargin*4;
+  positionX = canvasWidth/2 - rollButtonWidth/2;
+  positionY += domLineHeight + elementMargin*2;
+  const rollButtonHeight = windowHeight - positionY - elementMargin*4;
+  var rollButton = createButton('Roll the Dice!');
+  rollButton.class('btn btn-primary btn-lg');
+  rollButton.position(positionX, positionY);
+  rollButton.size(rollButtonWidth, rollButtonHeight);
+  rollButton.mouseReleased(rollTheDice);
 }
 
 function rollTheDice() {
@@ -94,16 +134,16 @@ function rollTheDice() {
 }
 
 function dice2Update() {
-  diceCount = 2;
+  isDiceActiveArray[1] = true;
   let isInputEmpty = true;
   let inputTextArray = [];
   // 入力値について判定する
-  for (let dice2Input of dice2InputArray) {
-    if (!dice2Input.value()) {
+  for (let input of dice2InputArray) {
+    if (!input.value()) {
       continue;
     }
     isInputEmpty = false;
-    inputTextArray.push(dice2Input.value());
+    inputTextArray.push(input.value());
   }
   // 全項目未入力の場合は、さいころの目を割り当てる
   diceEyes[1] = isInputEmpty ? diceDefaultEyes : inputTextArray;
@@ -113,11 +153,39 @@ function dice2Update() {
 }
 
 function dice2Remove() {
-  diceCount = 1;
+  isDiceActiveArray[1] = false;
   dice2text.style('color', diceColorArray[1][0]);
   dice2text.style('background-color',  diceColorArray[1][1]);
-  for (let dice2Input of dice2InputArray) {
-    dice2Input.value('');
+  for (let input of dice2InputArray) {
+    input.value('');
+  }
+}
+
+function dice3Update() {
+  isDiceActiveArray[2] = true;
+  let isInputEmpty = true;
+  let inputTextArray = [];
+  // 入力値について判定する
+  for (let input of dice3InputArray) {
+    if (!input.value()) {
+      continue;
+    }
+    isInputEmpty = false;
+    inputTextArray.push(input.value());
+  }
+  // 全項目未入力の場合は、さいころの目を割り当てる
+  diceEyes[2] = isInputEmpty ? diceDefaultEyes : inputTextArray;
+  for (let i=0; i<diceEyes[2].length; i++) {
+    dice3InputArray[i].value(diceEyes[2][i]);
+  }
+}
+
+function dice3Remove() {
+  isDiceActiveArray[2] = false;
+  dice3text.style('color', diceColorArray[2][0]);
+  dice3text.style('background-color',  diceColorArray[2][1]);
+  for (let input of dice3InputArray) {
+    input.value('');
   }
 }
 
@@ -130,61 +198,41 @@ function createDomButton(txt, x, y) {
 }
 
 function draw() {
-  const squareSize = windowWidth/6;
-  const squareSpan = squareSize + windowWidth/10;
-  textWidthSize = windowWidth/20;
+  const squareSize = canvasWidth/6;
+  const squareSpan = squareSize + canvasWidth/10;
+  textWidthSize = canvasWidth/20;
   
   background(240);
   fill('#000');
   textSize(textWidthSize);
-  text('Press Screen to Roll the Dice!', windowWidth/2, windowHeight*1/4);
-  text('log: '+currentResult, windowWidth/2, windowHeight*1/4 + 30); 
+  text('Tap Button to Roll the Dice!', canvasWidth/2, windowHeight*1/10);
+  text('log: '+currentResult, canvasWidth/2, windowHeight*1/10 + 50); 
   
   if (diceRollFrameCount > 0) {
     diceRollFrameCount += -1;
     var resultArray = [];
-    for (let i=0; i<diceCount; i++) {
-      resultArray.push(random(diceEyes[i]));
+    for (let i=0; i<isDiceActiveArray.length; i++) {
+      resultArray.push(isDiceActiveArray[i] ? random(diceEyes[i]) : null);
     }
     currentResult = resultArray;
   }
   
-  if (diceCount <= 2){
-    for (let i=0; i<diceCount; i++) {
-      let x = windowWidth/2 + squareSpan*(-diceCount/2 + 1/2 + i);
-      let y = windowHeight/2;
-      if (array_equal(diceEyes[i], diceDefaultEyes)) {
-        drawSquare(x, y, squareSize, currentResult[i],i);
-      } else {
-        drawTextSquare(x, y, squareSize, currentResult[i],i);
-      }
-    }  
-  }
-  if (diceCount > 2) {
-    for (let i=0; i<2; i++) {
-      drawSquare(
-        windowWidth/2 + squareSpan*(-diceCount/2 + 1/2 + i),
-        windowHeight/2,
-        squareSize,
-        currentResult[i],
-        i
-      );
+  activeDiceCount = isDiceActiveArray.filter(function(value){
+    return value === true;
+  }).length
+
+  var startPositionX = canvasWidth/2 + squareSpan*(-activeDiceCount/2 + 1/2);
+  for (let i=0; i<diceCount; i++) {
+    if (isDiceActiveArray[i] === false) { continue; }
+    let y = windowHeight*3/10;
+    if (array_equal(diceEyes[i], diceDefaultEyes)) {
+      drawSquare(startPositionX, y, squareSize, currentResult[i],i);
+    } else {
+      drawTextSquare(startPositionX, y, squareSize, currentResult[i],i);
     }
-    drawTextSquare(
-      windowWidth/2,
-      windowHeight/2 + squareSpan,
-      squareSize,
-      currentResult[currentResult.length-1],
-      2
-    );  
+    startPositionX += squareSpan;
   }
 }
-
-// function rollFinished() {
-//   if (currentResult.length > 0) {
-//     diceHistory.push(currentResult);
-//   }
-// }
 
 function drawTextSquare(centerX, centerY, size, eyeText,diceIndex) {
   const textWidthSize = size/2;

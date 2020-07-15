@@ -9,9 +9,10 @@ let diceHistory = [];
 let currentResult = [];
 let elementMargin = 16;
 let buttonWidth = 100;
-let isMousePressedObject = false;
 let dice2text;
 let dice2InputArray = [];
+let diceRollFrameCount = 0;
+const diceRollTime = 0.6* 60; // 秒間
 
 function setup() { 
   createCanvas(windowWidth, windowHeight);
@@ -38,10 +39,10 @@ function setup() {
   let domTotalWidth2 = elementMargin +
       (buttonWidth + elementMargin)*3 - elementMargin;
   
-  let domToralWidth = (domTotalWidth1 > domTotalWidth2) ? 
+  let domTotalWidth = (domTotalWidth1 > domTotalWidth2) ? 
       domTotalWidth1 : domTotalWidth2;
   
-  let startPositionX = windowWidth/2 - domToralWidth/2;
+  let startPositionX = windowWidth/2 - domTotalWidth/2;
   
   dice2text = createElement('h4', 'dice2');
   dice2text.position(startPositionX, windowHeight*3/4);
@@ -57,35 +58,38 @@ function setup() {
     input.position(positionX, positionY);
     input.size(inputWidth);
     input.value(diceEyes[1][i]);
-    input.mousePressed(setMousePressedTrue);
-    input.mouseReleased(setMousePressedFalse);
     dice2InputArray.push(input);
   }
+                                 
+  const rollButtonWidth = 160;
+  var positionY = windowHeight*2/3;
+  var positionX = windowWidth/2 - rollButtonWidth/2;
+  var rollButton = createButton('Roll the Dice!');
+  rollButton.class('btn btn-primary btn-lg');
+  rollButton.position(positionX, positionY);
+  rollButton.size(rollButtonWidth);
+  rollButton.mouseReleased(rollTheDice);
   
   positionY = windowHeight*3/4 + domLineHeight;
-  var dice2UpdateButton = createDomButton(
-    'update',
-    startPositionX + elementMargin,
-    positionY
-  );
+  
+  positionX = startPositionX + elementMargin;
+  var dice2UpdateButton = createDomButton('update', positionX, positionY);
   dice2UpdateButton.mousePressed(dice2Update);
   
-  var dice2ColorButton = createDomButton(
-    'color',
-    dice2UpdateButton.x + dice2UpdateButton.width + elementMargin,
-    positionY
-  );
+  positionX = dice2UpdateButton.x + dice2UpdateButton.width + elementMargin;
+  var dice2ColorButton = createDomButton('color', positionX, positionY);
   
-  var dice2RemoveButton = createDomButton(
-    'remove',
-    dice2ColorButton.x + dice2ColorButton.width + elementMargin,
-    positionY
-  );
+  positionX = dice2ColorButton.x + dice2ColorButton.width + elementMargin;
+  var dice2RemoveButton = createDomButton('remove', positionX, positionY);
   dice2RemoveButton.mousePressed(dice2Remove);
 }
 
+function rollTheDice() {
+  diceRollFrameCount = diceRollTime;
+  // draw()にて減数していく
+}
+
 function dice2Update() {
-  setMousePressedTrue();
   diceCount = 2;
   let isInputEmpty = true;
   let inputTextArray = [];
@@ -105,7 +109,6 @@ function dice2Update() {
 }
 
 function dice2Remove() {
-  setMousePressedTrue();
   diceCount = 1;
   dice2text.style('color', '#000');
   dice2text.style('background-color',  '#FFF');
@@ -119,8 +122,6 @@ function createDomButton(txt, x, y) {
   button.class('btn btn-outline-dark');
   button.position(x, y);
   button.size(buttonWidth);
-  button.mousePressed(setMousePressedTrue);
-  button.mouseReleased(setMousePressedFalse);
   return button;
 }
 
@@ -132,15 +133,16 @@ function draw() {
   background(240);
   textSize(textWidthSize);
   text('Press Screen to Roll the Dice!', windowWidth/2, windowHeight*1/4);
-  if (mouseIsPressed == true && !isMousePressedObject) {
+  text('log: '+currentResult, windowWidth/2, windowHeight*1/4 + 30); 
+  
+  if (diceRollFrameCount > 0) {
+    diceRollFrameCount += -1;
     var resultArray = [];
     for (let i=0; i<diceCount; i++) {
       resultArray.push(random(diceEyes[i]));
     }
-    resultArray.push(random(customDiceEyes)); // 最後の要素はテキスト版
     currentResult = resultArray;
   }
-  text(currentResult, windowWidth/2, windowHeight*1/4 + 30); 
   
   if (diceCount <= 2){
     for (let i=0; i<diceCount; i++) {
@@ -169,34 +171,19 @@ function draw() {
       currentResult[currentResult.length-1]
     );  
   }
-  
 }
 
-function setMousePressedTrue() {
-  isMousePressedObject = true;
-}
-
-function setMousePressedFalse() {
-  isMousePressedObject = false;
-}
-
-function mouseReleased() {
-  if (currentResult.length > 0) {
-    diceHistory.push(currentResult);
-  }
-}
+// function rollFinished() {
+//   if (currentResult.length > 0) {
+//     diceHistory.push(currentResult);
+//   }
+// }
 
 function drawTextSquare(centerX, centerY, size, eyeText) {
   const textWidthSize = size/2;
   const squareCornerRound = size/5;
   fill(250, 250, 250);
-  rect(
-    centerX,
-    centerY,
-    size,
-    size,
-    squareCornerRound
-  );
+  rect(centerX, centerY, size, size, squareCornerRound);
   fill(0);
   textSize(textWidthSize);
   text(eyeText, centerX, centerY+size*0.2);//0.2は微調整分

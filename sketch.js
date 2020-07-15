@@ -6,8 +6,8 @@ let diceEyes = [1, 2, 3, 4 ,5, 6];
 let customDiceEyes = ['船1', '船2', '船3', '黄', '青', '緑'];
 let diceHistory = [];
 let currentResult = [];
-let elementMargin = 12;
-let buttonWidth = 60;
+let elementMargin = 16;
+let buttonWidth = 100;
 let isMousePressedObject = false;
 let dice2text;
 let dice2InputArray = [];
@@ -21,15 +21,15 @@ function setup() {
   textAlign(CENTER);
   textSize(textWidthSize);
   
-  const diceTextWidth = 48;
-  dice2text = createDiv('dice2');
+  const diceTextWidth = 60;
+  dice2text = createElement('h4', 'dice2');
   dice2text.position(elementMargin, windowHeight*3/4);
   dice2text.size(diceTextWidth);
   dice2text.style('color', '#000');
   dice2text.style('background-color',  '#FFF');
   
-  const inputWidth = 20;
-  const domLineHeight = 30;
+  const inputWidth = 30;
+  const domLineHeight = 40;
   for (let i=0; i<6; i++) { // TODO: window widthが小さい場合のレイアウトを作る
     var input = createInput();
     var positionX = dice2text.x + dice2text.width + elementMargin + (inputWidth + elementMargin)*i;
@@ -94,6 +94,7 @@ function dice2Remove() {
 
 function createDomButton(txt, x, y) {
   var button = createButton(txt);
+  button.class('btn btn-outline-dark');
   button.position(x, y);
   button.size(buttonWidth);
   button.mousePressed(setMousePressedTrue);

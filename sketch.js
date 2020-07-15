@@ -1,16 +1,19 @@
 let diceCount; // さいころの個数
-let squareSize;
-let squareSpan;
 let textWidthSize;
 let diceDefaultEyes = ['1', '2', '3', '4' ,'5', '6'];
 let diceEyes = [];
-let customDiceEyes = ['船1', '船2', '船3', '黄', '青', '緑'];
 let diceHistory = [];
 let currentResult = [];
 let elementMargin = 16;
 let buttonWidth = 100;
 let dice2text;
 let dice2InputArray = [];
+let diceDefaultColorArray = [
+  ['#000', '#FFF'],
+  ['#FF0', '#F00'],
+  ['#FFF', '#F90']
+];
+let diceColorArray = [];
 let diceRollFrameCount = 0;
 const diceRollTime = 0.6* 60; // 秒間
 
@@ -18,10 +21,11 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
  
   diceCount=2;
+  diceColorArray = diceDefaultColorArray;
   diceEyes = [
     diceDefaultEyes,
     diceDefaultEyes,
-    ['a','b','c','d','e','f']
+    ['船a', '船b', '船c', '黄', '青', '緑']
   ]
   
   rectMode(CENTER);
@@ -47,8 +51,8 @@ function setup() {
   dice2text = createElement('h4', 'dice2');
   dice2text.position(startPositionX, windowHeight*3/4);
   dice2text.size(diceTextWidth);
-  dice2text.style('color', '#000');
-  dice2text.style('background-color',  '#FFF');
+  dice2text.style('color', diceColorArray[1][0]);
+  dice2text.style('background-color',  diceColorArray[1][1]);
   
   for (let i=0; i<6; i++) { // TODO: window widthが小さい場合のレイアウトを作る
     var input = createInput();
@@ -110,8 +114,8 @@ function dice2Update() {
 
 function dice2Remove() {
   diceCount = 1;
-  dice2text.style('color', '#000');
-  dice2text.style('background-color',  '#FFF');
+  dice2text.style('color', diceColorArray[1][0]);
+  dice2text.style('background-color',  diceColorArray[1][1]);
   for (let dice2Input of dice2InputArray) {
     dice2Input.value('');
   }
@@ -126,11 +130,12 @@ function createDomButton(txt, x, y) {
 }
 
 function draw() {
-  squareSize = windowWidth/6;
-  squareSpan = squareSize + windowWidth/10;
+  const squareSize = windowWidth/6;
+  const squareSpan = squareSize + windowWidth/10;
   textWidthSize = windowWidth/20;
   
   background(240);
+  fill('#000');
   textSize(textWidthSize);
   text('Press Screen to Roll the Dice!', windowWidth/2, windowHeight*1/4);
   text('log: '+currentResult, windowWidth/2, windowHeight*1/4 + 30); 
@@ -149,9 +154,9 @@ function draw() {
       let x = windowWidth/2 + squareSpan*(-diceCount/2 + 1/2 + i);
       let y = windowHeight/2;
       if (array_equal(diceEyes[i], diceDefaultEyes)) {
-        drawSquare(x, y, squareSize, currentResult[i]);
+        drawSquare(x, y, squareSize, currentResult[i],i);
       } else {
-        drawTextSquare(x, y, squareSize, currentResult[i]);
+        drawTextSquare(x, y, squareSize, currentResult[i],i);
       }
     }  
   }
@@ -161,14 +166,16 @@ function draw() {
         windowWidth/2 + squareSpan*(-diceCount/2 + 1/2 + i),
         windowHeight/2,
         squareSize,
-        currentResult[i]
+        currentResult[i],
+        i
       );
     }
     drawTextSquare(
       windowWidth/2,
       windowHeight/2 + squareSpan,
       squareSize,
-      currentResult[currentResult.length-1]
+      currentResult[currentResult.length-1],
+      2
     );  
   }
 }
@@ -179,20 +186,20 @@ function draw() {
 //   }
 // }
 
-function drawTextSquare(centerX, centerY, size, eyeText) {
+function drawTextSquare(centerX, centerY, size, eyeText,diceIndex) {
   const textWidthSize = size/2;
   const squareCornerRound = size/5;
-  fill(250, 250, 250);
+  fill(diceColorArray[diceIndex][1]);
   rect(centerX, centerY, size, size, squareCornerRound);
-  fill(0);
+  fill(diceColorArray[diceIndex][0]);
   textSize(textWidthSize);
   text(eyeText, centerX, centerY+size*0.2);//0.2は微調整分
 }
 
-function drawSquare(centerX, centerY, size, eyes) {
+function drawSquare(centerX, centerY, size, eyes, diceIndex) {
   const botSize = size/5;
   const squareCornerRound = size/5;
-  fill(250, 250, 250);
+  fill(diceColorArray[diceIndex][1]);
   rect(
     centerX,
     centerY,
@@ -200,7 +207,7 @@ function drawSquare(centerX, centerY, size, eyes) {
     size,
     squareCornerRound
   );
-  fill(0);
+  fill(diceColorArray[diceIndex][0]);
   switch(eyes) {
     case '1':
       circle(

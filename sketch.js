@@ -2,7 +2,8 @@ let diceCount; // さいころの個数
 let squareSize;
 let squareSpan;
 let textWidthSize;
-let diceEyes = [1, 2, 3, 4 ,5, 6];
+let diceDefaultEyes = ['1', '2', '3', '4' ,'5', '6'];
+let diceEyes = [];
 let customDiceEyes = ['船1', '船2', '船3', '黄', '青', '緑'];
 let diceHistory = [];
 let currentResult = [];
@@ -16,6 +17,11 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
  
   diceCount=2;
+  diceEyes = [
+    diceDefaultEyes,
+    diceDefaultEyes,
+    ['a','b','c','d','e','f']
+  ]
   
   rectMode(CENTER);
   textAlign(CENTER);
@@ -50,7 +56,7 @@ function setup() {
     var positionY = windowHeight*3/4;
     input.position(positionX, positionY);
     input.size(inputWidth);
-    input.value(diceEyes[i]);
+    input.value(diceEyes[1][i]);
     input.mousePressed(setMousePressedTrue);
     input.mouseReleased(setMousePressedFalse);
     dice2InputArray.push(input);
@@ -82,17 +88,19 @@ function dice2Update() {
   setMousePressedTrue();
   diceCount = 2;
   let isInputEmpty = true;
+  let inputTextArray = [];
   // 入力値について判定する
   for (let dice2Input of dice2InputArray) {
-    if (dice2Input.value()) {
-      isInputEmpty = false;
-      break;
+    if (!dice2Input.value()) {
+      continue;
     }
+    isInputEmpty = false;
+    inputTextArray.push(dice2Input.value());
   }
-  if (isInputEmpty) {
-    for (let i=0; i<diceEyes.length; i++) {
-      dice2InputArray[i].value(diceEyes[i]);
-    }
+  // 全項目未入力の場合は、さいころの目を割り当てる
+  diceEyes[1] = isInputEmpty ? diceDefaultEyes : inputTextArray;
+  for (let i=0; i<diceEyes[1].length; i++) {
+    dice2InputArray[i].value(diceEyes[1][i]);
   }
 }
 
@@ -127,20 +135,22 @@ function draw() {
   if (mouseIsPressed == true && !isMousePressedObject) {
     var resultArray = [];
     for (let i=0; i<diceCount; i++) {
-      resultArray.push(random(diceEyes));
+      resultArray.push(random(diceEyes[i]));
     }
     resultArray.push(random(customDiceEyes)); // 最後の要素はテキスト版
     currentResult = resultArray;
   }
+  text(currentResult, windowWidth/2, windowHeight*1/4 + 30); 
   
   if (diceCount <= 2){
     for (let i=0; i<diceCount; i++) {
-      drawSquare(
-        windowWidth/2 + squareSpan*(-diceCount/2 + 1/2 + i),
-        windowHeight/2,
-        squareSize,
-        currentResult[i]
-      );
+      let x = windowWidth/2 + squareSpan*(-diceCount/2 + 1/2 + i);
+      let y = windowHeight/2;
+      if (array_equal(diceEyes[i], diceDefaultEyes)) {
+        drawSquare(x, y, squareSize, currentResult[i]);
+      } else {
+        drawTextSquare(x, y, squareSize, currentResult[i]);
+      }
     }  
   }
   if (diceCount > 2) {
@@ -205,14 +215,14 @@ function drawSquare(centerX, centerY, size, eyes) {
   );
   fill(0);
   switch(eyes) {
-    case 1:
+    case '1':
       circle(
         centerX,
         centerY,
         botSize
       );
       break;
-    case 2:
+    case '2':
       circle(
         centerX - botSize,
         centerY + botSize,
@@ -224,46 +234,7 @@ function drawSquare(centerX, centerY, size, eyes) {
         botSize
       );
       break;
-    case 3:
-      circle(
-        centerX,
-        centerY,
-        botSize
-      );
-      circle(
-        centerX - botSize,
-        centerY + botSize,
-        botSize
-      );
-      circle(
-        centerX + botSize,
-        centerY - botSize,
-        botSize
-      );
-      break;
-    case 4:
-      circle(
-        centerX - botSize,
-        centerY - botSize,
-        botSize
-      );
-      circle(
-        centerX + botSize,
-        centerY - botSize,
-        botSize
-      );
-      circle(
-        centerX - botSize,
-        centerY + botSize,
-        botSize
-      );
-      circle(
-        centerX + botSize,
-        centerY + botSize,
-        botSize
-      );
-      break;
-    case 5:
+    case '3':
       circle(
         centerX,
         centerY,
@@ -271,6 +242,18 @@ function drawSquare(centerX, centerY, size, eyes) {
       );
       circle(
         centerX - botSize,
+        centerY + botSize,
+        botSize
+      );
+      circle(
+        centerX + botSize,
+        centerY - botSize,
+        botSize
+      );
+      break;
+    case '4':
+      circle(
+        centerX - botSize,
         centerY - botSize,
         botSize
       );
@@ -290,7 +273,34 @@ function drawSquare(centerX, centerY, size, eyes) {
         botSize
       );
       break;
-    case 6:
+    case '5':
+      circle(
+        centerX,
+        centerY,
+        botSize
+      );
+      circle(
+        centerX - botSize,
+        centerY - botSize,
+        botSize
+      );
+      circle(
+        centerX + botSize,
+        centerY - botSize,
+        botSize
+      );
+      circle(
+        centerX - botSize,
+        centerY + botSize,
+        botSize
+      );
+      circle(
+        centerX + botSize,
+        centerY + botSize,
+        botSize
+      );
+      break;
+    case '6':
       circle(
         centerX - botSize,
         centerY - botSize*1.3,
@@ -325,4 +335,14 @@ function drawSquare(centerX, centerY, size, eyes) {
     default:
       break;
   }
+}
+
+function array_equal(a, b) {
+  if (!Array.isArray(a))    return false;
+  if (!Array.isArray(b))    return false;
+  if (a.length != b.length) return false;
+  for (var i = 0, n = a.length; i < n; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }

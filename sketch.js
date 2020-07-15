@@ -22,17 +22,31 @@ function setup() {
   textSize(textWidthSize);
   
   const diceTextWidth = 60;
+  const inputWidth = 30;
+  const domLineHeight = 40;
+  
+  // 画面幅とdomからcenter表示するための初期xを算出する(1段目or2段目)
+  let domTotalWidth1 = diceTextWidth + elementMargin +
+      (inputWidth + elementMargin)*6 - elementMargin;
+  
+  let domTotalWidth2 = elementMargin +
+      (buttonWidth + elementMargin)*3 - elementMargin;
+  
+  let domToralWidth = (domTotalWidth1 > domTotalWidth2) ? 
+      domTotalWidth1 : domTotalWidth2;
+  
+  let startPositionX = windowWidth/2 - domToralWidth/2;
+  
   dice2text = createElement('h4', 'dice2');
-  dice2text.position(elementMargin, windowHeight*3/4);
+  dice2text.position(startPositionX, windowHeight*3/4);
   dice2text.size(diceTextWidth);
   dice2text.style('color', '#000');
   dice2text.style('background-color',  '#FFF');
   
-  const inputWidth = 30;
-  const domLineHeight = 40;
   for (let i=0; i<6; i++) { // TODO: window widthが小さい場合のレイアウトを作る
     var input = createInput();
-    var positionX = dice2text.x + dice2text.width + elementMargin + (inputWidth + elementMargin)*i;
+    var positionX = dice2text.x + dice2text.width +
+        elementMargin + (inputWidth + elementMargin)*i;
     var positionY = windowHeight*3/4;
     input.position(positionX, positionY);
     input.size(inputWidth);
@@ -45,7 +59,7 @@ function setup() {
   positionY = windowHeight*3/4 + domLineHeight;
   var dice2UpdateButton = createDomButton(
     'update',
-    elementMargin*2,
+    startPositionX + elementMargin,
     positionY
   );
   dice2UpdateButton.mousePressed(dice2Update);

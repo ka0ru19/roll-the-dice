@@ -122,6 +122,8 @@ function setup() {
   positionY += domLineHeight + elementMargin*2;
   const rollButtonHeight = windowHeight - positionY - elementMargin*4;
   var rollButton = createButton('Roll the Dice!');
+  const rollButtonFontsize = canvasWidth/10;
+  rollButton.style('font-size', rollButtonFontsize+'px');
   rollButton.class('btn btn-primary btn-lg');
   rollButton.position(positionX, positionY);
   rollButton.size(rollButtonWidth, rollButtonHeight);
@@ -206,7 +208,7 @@ function draw() {
   fill('#000');
   textSize(textWidthSize);
   text('Tap Button to Roll the Dice!', canvasWidth/2, windowHeight*1/10);
-  text('log: '+currentResult, canvasWidth/2, windowHeight*1/10 + 50); 
+  text('result: '+currentResult, canvasWidth/2, windowHeight*1/10 + 60); 
   
   if (diceRollFrameCount > 0) {
     diceRollFrameCount += -1;
